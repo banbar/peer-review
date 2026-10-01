@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review System - Ana Sayfa</title>
+    <style>
+        /* Genel Ayarlar */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f4f6;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Header ve Ana İçerik */
+        .container {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            margin-bottom: 2rem;
+        }
+
+        /* Butonlar */
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap; /* Daha küçük ekranlarda butonların alt alta gelmesi için */
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+            font-weight: bold;
+            text-decoration: none;
+            color: #fff;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-register {
+            background-color: #3498db;
+        }
+
+        .btn-register:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-login {
+            background-color: #2ecc71;
+        }
+
+        .btn-login:hover {
+            background-color: #27ae60;
+        }
+
+        .btn-admin {
+            background-color: #e74c3c; /* Admin butonu için kırmızı ton */
+        }
+
+        .btn-admin:hover {
+            background-color: #c0392b;
+        }
+
+        /* Footer */
+        footer {
+            position: absolute;
+            bottom: 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #95a5a6;
+        }
+
+        /* Responsive Tasarım için */
+        @media (max-width: 600px) {
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Welcome to Review System</h1>
+        <p>Evaluate websites, leave feedback, and help make improvements.</p>
+        <div class="button-group">
+            <a href="register.html" class="btn btn-register">Sign Up</a>
+            <a href="login.html" class="btn btn-login">Login</a>
+            <a href="admin-login.html" class="btn btn-admin">Admin Login</a> <!-- Yeni Admin Login Butonu -->
+        </div>
+    </div>
+
+    <footer>&copy; 2024 Review System. All rights reserved.</footer>
+    
+</body>
+</html>

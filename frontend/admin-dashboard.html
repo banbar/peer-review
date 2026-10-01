@@ -1,0 +1,1733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review System - Admin Evaluation Panel</title>
+    <style>
+        /* Genel Ayarlar */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f4f6;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h2 {
+            font-size: 1.5rem;
+        }
+
+        .logout-btn {
+            padding: 0.5rem 1rem;
+            background-color: #e74c3c;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: #c0392b;
+        }
+
+        /* Ana İçerik */
+        main {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        section {
+            margin-bottom: 3rem;
+        }
+
+        section h3 {
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        /* Tablo Stilleri */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+        }
+
+        th, td {
+            border: 1px solid #bdc3c7;
+            padding: 0.8rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        /* Websites Sütununda Font Boyutunu Küçültme (Sadece td'ler için) */
+        #websitesTable td.websites-column {
+            font-size: 0.8em; /* Daha okunabilir bir boyuta ayarlandı */
+        }
+
+        /* Düzenleme ve Silme Butonları */
+        .edit-btn, .delete-btn {
+            padding: 0.3rem 0.6rem;
+            background-color: #3498db;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-right: 0.5rem;
+        }
+
+        .edit-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .delete-btn {
+            background-color: #e74c3c;
+        }
+
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+
+        /* Modal Stilleri */
+        .modal {
+            display: none; /* Varsayılan olarak gizli */
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 2rem;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .close-modal {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-modal:hover,
+        .close-modal:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal form label {
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal form input, 
+        .modal form textarea, 
+        .modal form select {
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .modal form button {
+            margin-top: 1.5rem;
+            padding: 0.7rem;
+            background-color: #2c3e50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .modal form button:hover {
+            background-color: #1a252f;
+        }
+
+        /* Buton Stilleri */
+        .add-btn {
+            padding: 0.7rem 1.5rem;
+            background-color: #16a085;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .add-btn:hover {
+            background-color: #138d75;
+        }
+
+        /* Responsive Tasarım */
+        @media (max-width: 768px) {
+            table, thead, tbody, th, td, tr { 
+                display: block; 
+            }
+
+            th {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            tr {
+                margin-bottom: 1rem;
+            }
+
+            td {
+                border: none;
+                position: relative;
+                padding-left: 50%;
+            }
+
+            td:before {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 45%;
+                padding-right: 1rem;
+                white-space: nowrap;
+                font-weight: bold;
+            }
+        }
+
+        /* Arama Formu Stilleri */
+        .search-form {
+            margin-bottom: 1rem;
+        }
+
+        .search-form input {
+            padding: 0.5rem;
+            margin-right: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .search-form button {
+            padding: 0.5rem 1rem;
+            background-color: #27ae60;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .search-form button:hover {
+            background-color: #1e8449;
+        }
+
+        .clear-search-btn {
+            padding: 0.5rem 1rem;
+            background-color: #95a5a6;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-left: 0.5rem;
+        }
+
+        .clear-search-btn:hover {
+            background-color: #7f8c8d;
+        }
+
+        /* Yeni Eklenen: Edit Website Modal Stilleri */
+        /* Modal stilleri zaten genel .modal ve .modal-content sınıfları ile tanımlı olduğundan ek bir stil gerekmemektedir */
+
+        /* Yeni Eklenen: Evaluations Filter Form Stilleri */
+        .filter-form {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .filter-form label {
+            margin-right: 0.5rem;
+            font-weight: bold;
+        }
+
+        .filter-form select {
+            padding: 0.5rem;
+            margin-right: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        #clearEvaluationFilterBtn, #clearWebsitesFilterBtn {
+            padding: 0.5rem 1rem;
+            background-color: #95a5a6;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #clearEvaluationFilterBtn:hover, #clearWebsitesFilterBtn:hover {
+            background-color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h2>Admin Dashboard</h2>
+        <button class="logout-btn" id="logoutButton">Logout</button>
+    </header>
+
+    <main>
+        <!-- Projects Section -->
+        <section>
+            <h3>Projects</h3>
+            <!-- Add Project Button -->
+            <button class="add-btn" id="addProjectBtn">Add Project</button>
+            <!-- Projects Table -->
+            <table id="projectsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Project Name</th>
+                        <!-- <th>Type</th> --> <!-- Type sütunu kaldırıldı -->
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Evaluation Deadline</th>
+                        <th>Websites</th>
+                        <th>Action</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Project data will be loaded here -->
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Students Section -->
+        <section>
+            <h3>Students</h3>
+            <!-- Student Search Form -->
+            <div class="search-form">
+                <input type="text" id="searchFirstName" placeholder="Search by First Name">
+                <input type="text" id="searchLastName" placeholder="Search by Last Name">
+                <button id="searchStudentBtn">Find Student</button>
+                <button class="clear-search-btn" id="clearSearchBtn">Clear Search</button>
+            </div>
+              <!-- Export Excel (Proje filtreli) -->
+  <button class="add-btn" id="exportExcelBtn">Export Excel</button>
+
+  <!-- Student Search Form -->
+            <!-- Add Student Button -->
+            <button class="add-btn" id="addStudentBtn">Add Student</button>
+            <!-- Students Table -->
+            <table id="studentsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Student Number</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Action</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Student data will be loaded here -->
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Websites Section -->
+        <section>
+            <h3>Websites</h3>
+            
+            <!-- Filter Form for Websites -->
+            <div class="filter-form" id="websitesFilterForm">
+                <label for="filterWebsitesProject">Filter by Project:</label>
+                <select id="filterWebsitesProject">
+                    <option value="">All Projects</option>
+                    <!-- Project options will be loaded dynamically -->
+                </select>
+                <button class="clear-search-btn" id="clearWebsitesFilterBtn">Clear Filter</button>
+            </div>
+            
+            <!-- Add Website Button (Opsiyonel) -->
+            <!-- <button class="add-btn" id="addWebsiteBtn">Add Website</button> --> <!-- Eğer eklenecekse, benzer şekilde eklenebilir -->
+            
+            <!-- Websites Table -->
+            <table id="websitesTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>URL</th>
+                        <th>Project</th>
+                        <th>Student</th>
+                        <th>Evaluation Count</th>
+                        <th>Total Score</th>
+                        <th>Action</th> <!-- Yeni Action Sütunu -->
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Website data will be loaded here -->
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Evaluations Section -->
+        <section>
+            <h3>Evaluations</h3>
+            
+            <!-- Filter Form -->
+            <div class="filter-form">
+                <label for="filterProject">Filter by Project:</label>
+                <select id="filterProject">
+                    <option value="">All Projects</option>
+                    <!-- Project options will be loaded dynamically -->
+                </select>
+                <button class="clear-search-btn" id="clearEvaluationFilterBtn">Clear Filter</button>
+            </div>
+            
+            <!-- Populate Evaluations Button -->
+            <!-- Evaluations Table -->
+            <table id="evaluationsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Evaluator</th>
+                        <th>Website</th>
+                        <th>Score</th>
+                        <th>Comment</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Evaluation data will be loaded here -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+<!-- Add/Edit Project Modal -->
+<div id="projectModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeProjectModal">&times;</span>
+        <h3 id="projectModalTitle">Add Project</h3>
+        <form id="projectForm">
+            <input type="hidden" id="projectId">
+            <label for="projectName">Project Name:</label>
+            <input type="text" id="projectName" name="name" required>
+
+            <!-- <label for="projectType">Type:</label>
+            <input type="text" id="projectType" name="type" required> --> <!-- Type alanı kaldırıldı -->
+
+            <label for="projectStartDate">Start Date:</label>
+            <input type="date" id="projectStartDate" name="start_date" required>
+
+            <label for="projectEndDate">End Date:</label>
+            <input type="date" id="projectEndDate" name="end_date">
+
+            <!-- Yeni Alan: Evaluation Deadline -->
+            <label for="projectEvaluationDeadline">Evaluation Deadline:</label>
+            <input type="date" id="projectEvaluationDeadline" name="evaluation_deadline">
+
+            <button type="submit" id="projectSubmitBtn">Save</button>
+        </form>
+    </div>
+</div>
+
+
+    <!-- Add/Edit Student Modal -->
+    <div id="studentModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeStudentModal">&times;</span>
+            <h3 id="studentModalTitle">Add Student</h3>
+            <form id="studentForm">
+                <input type="hidden" id="studentId">
+                <label for="studentNumber">Student Number:</label>
+                <input type="text" id="studentNumber" name="student_number" required>
+
+                <label for="firstName">First Name:</label>
+                <input type="text" id="firstName" name="first_name" required>
+
+                <label for="lastName">Last Name:</label>
+                <input type="text" id="lastName" name="last_name" required>
+
+                <button type="submit" id="studentSubmitBtn">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Evaluation Modal -->
+    <div id="evaluationModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeEvaluationModal">&times;</span>
+            <h3 id="evaluationModalTitle">Edit Evaluation</h3>
+            <form id="evaluationForm">
+                <input type="hidden" id="evaluationId">
+                
+                <label for="evaluator">Evaluator:</label>
+                <select id="evaluator" name="evaluator_id" required>
+                    <!-- Evaluator options will be loaded dynamically -->
+                </select>
+
+                <label for="website">Website:</label>
+                <select id="website" name="website_id" required>
+                    <!-- Website options will be loaded dynamically -->
+                </select>
+
+                <label for="score">Score (1-5):</label>
+                <input type="number" id="score" name="score" min="1" max="5" required>
+
+                <label for="comment">Comment:</label>
+                <textarea id="comment" name="comment" rows="4"></textarea>
+
+                <button type="submit" id="evaluationSubmitBtn">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Populate Evaluations Modal -->
+    <div id="populateEvaluationsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="closePopulateEvaluationsModal">&times;</span>
+            <h3>Populate Evaluations</h3>
+            <form id="populateEvaluationsForm">
+                <label for="populateProject">Select Project:</label>
+                <select id="populateProject" name="project_id" required>
+                    <option value="">Select</option>
+                    <!-- Projects will be listed here -->
+                </select>
+                <button type="submit">Populate Evaluations</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Yeni Eklenen: Edit Website Modal -->
+    <div id="websiteModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeWebsiteModal">&times;</span>
+            <h3 id="websiteModalTitle">Edit Website</h3>
+            <form id="websiteForm">
+                <input type="hidden" id="websiteId">
+                <label for="websiteURL">URL:</label>
+                <input type="text" id="websiteURL" name="url" required>
+
+                <label for="websiteProject">Project:</label>
+                <select id="websiteProject" name="project_id" required>
+                    <!-- Project options will be loaded dynamically -->
+                </select>
+
+                <label for="websiteStudent">Student:</label>
+                <select id="websiteStudent" name="student_id" required>
+                    <!-- Student options will be loaded dynamically -->
+                </select>
+
+                <button type="submit" id="websiteSubmitBtn">Update</button>
+            </form>
+        </div>
+    </div>
+ 
+    <script>
+        // =====================
+        // Genel Fonksiyonlar ve Event Listener'lar
+        // =====================
+
+        // Logout Fonksiyonu
+        document.getElementById('logoutButton').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    window.location.href = 'login.html';
+                } else {
+                    alert(data.error || 'Logout failed');
+                }
+            } catch (error) {
+                console.error('Logout Error:', error);
+                alert('An error occurred during logout.');
+            }
+        });
+
+        // Kullanıcı Bilgilerini Çekme ve Rol Kontrolü
+        async function getUserInfo() {
+            try {
+                const response = await fetch('/auth/me', {
+                    method: 'GET',
+                    credentials: 'include' // Çerezleri gönder
+                });
+
+                const user = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(user.error || 'Authorization required');
+                }
+
+                if (!['admin', 'editor'].includes(user.role)) {
+  alert('You do not have permission to access this page.');
+  window.location.href = 'login.html';
+}
+
+                return user;
+            } catch (error) {
+                console.error('Error fetching user info:', error);
+                alert(error.message);
+                window.location.href = 'login.html';
+            }
+        }
+
+        // API'den Veri Çekme Fonksiyonu
+        async function fetchData(endpoint) {
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'GET',
+                    credentials: 'include' // Çerezleri gönder
+                });
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.error || 'Network response was not ok.');
+                }
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Fetch Error:', error);
+                alert('Data fetching error: ' + error.message);
+                return {};
+            }
+        }
+
+        // Modal Elemanlarını Seçme
+        const projectModal = document.getElementById('projectModal');
+        const closeProjectModal = document.getElementById('closeProjectModal');
+        const projectForm = document.getElementById('projectForm');
+        const addProjectBtn = document.getElementById('addProjectBtn');
+        const projectModalTitle = document.getElementById('projectModalTitle');
+        const projectSubmitBtn = document.getElementById('projectSubmitBtn');
+
+        const studentModal = document.getElementById('studentModal');
+        const closeStudentModal = document.getElementById('closeStudentModal');
+        const studentForm = document.getElementById('studentForm');
+        const addStudentBtn = document.getElementById('addStudentBtn');
+        const studentModalTitle = document.getElementById('studentModalTitle');
+        const studentSubmitBtn = document.getElementById('studentSubmitBtn');
+  // --- Tarih yardımcıları ---
+// 1) Input[type=date] için: "YYYY-MM-DD" (lokale göre doğru gün)
+const toLocalYMD = (s) => {
+  if (!s) return '';
+  const d = new Date(s); // s: "2025-10-24T21:00:00.000Z" veya "2025-10-25"
+  // Tarihi yerel güne çek: (UTC ofsetini çıkar -> ISO yaz -> ilk 10 karakter)
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 10);
+};
+
+// 2) Tablo gösterimi için TR formatı: "DD.MM.YYYY"
+const toLocalTR = (s) => {
+  if (!s) return 'Not specified';
+  const d = new Date(s);
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  const [y, m, day] = d.toISOString().slice(0,10).split('-');
+  return `${day}.${m}.${y}`;
+};
+
+// 3) “Olduğu gibi göster” ama UTC kaydırmasını düzelt (isterseniz)
+const toLocalRawYMD = (s) => s ? toLocalYMD(s) : 'Not specified';
+
+        const evaluationModal = document.getElementById('evaluationModal');
+        const closeEvaluationModal = document.getElementById('closeEvaluationModal');
+        const evaluationForm = document.getElementById('evaluationForm');
+        const evaluationModalTitle = document.getElementById('evaluationModalTitle');
+        const evaluationSubmitBtn = document.getElementById('evaluationSubmitBtn');
+
+        // =====================
+        // Populate Evaluations Modal Elements
+        // =====================
+        const populateEvaluationsModal = document.getElementById('populateEvaluationsModal');
+        const populateEvaluationsForm = document.getElementById('populateEvaluationsForm');
+        const populateProjectSelect = document.getElementById('populateProject');
+        const closePopulateEvaluationsModal = document.getElementById('closePopulateEvaluationsModal');
+        const populateEvaluationsBtn = document.getElementById('populateEvaluationsBtn');
+
+        // =====================
+        // Proje Yönetim Fonksiyonları
+        // =====================
+
+       // ... mevcut JavaScript kodları ...
+
+/**
+ * Projeleri Yükleme
+ */
+async function loadProjects() {
+    try {
+        const projectsData = await fetchData('/admin/projects');
+        const projects = Array.isArray(projectsData.projects) ? projectsData.projects : [];
+        const tbody = document.querySelector('#projectsTable tbody');
+        tbody.innerHTML = '';
+        projects.forEach(project => {
+            const tr = document.createElement('tr');
+            const websites = Array.isArray(project.websites) && project.websites.length > 0
+                ? project.websites.map(w => `<a href="${w.url}" target="_blank">${w.url}</a>`).join(', ')
+                : 'No website';
+            tr.innerHTML = `
+                <td>${project.id}</td>
+                <td>${project.name}</td>
+                <!-- <td>${project.type}</td> --> <!-- Type sütunu kaldırıldı -->
+                <td>${toLocalTR(project.start_date)}</td>
+                <td>${toLocalTR(project.end_date)}</td>
+                <td>${toLocalTR(project.evaluation_deadline)}</td>
+
+                <td class="websites-column">${websites}</td> <!-- Sınıf eklendi -->
+                <td>
+                    <button class="edit-btn" data-id="${project.id}">Edit</button>
+                </td>
+                <td>
+                    <button class="delete-btn" data-id="${project.id}">Delete</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Toggle Active Durumunu Güncelleme Event Listener'ları
+        document.querySelectorAll('.toggle-active').forEach(toggle => {
+            toggle.addEventListener('change', async (e) => {
+                const projectId = e.target.getAttribute('data-id');
+                const isActive = e.target.checked;
+                console.log(`Project ID ${projectId} active status: ${isActive}`);
+
+                try {
+                    const response = await fetch(`/admin/projects/${projectId}`, { // PATCH endpoint
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ is_active: isActive }),
+                        credentials: 'include'
+                    });
+
+                    const data = await response.json();
+                    if (response.ok) {
+                        alert(data.message);
+                        loadProjects(); // Güncellenmiş projeleri yeniden yükle
+                    } else {
+                        alert(data.error || 'An error occurred while updating project status.');
+                        e.target.checked = !isActive; // Toggle'ı geri al
+                    }
+                } catch (error) {
+                    console.error('Error updating project status:', error);
+                    alert('An error occurred while updating project status.');
+                    e.target.checked = !isActive; // Toggle'ı geri al
+                }
+            });
+        });
+
+        // Edit ve Delete Butonları için Event Listener'lar Ekleme
+        document.querySelectorAll('#projectsTable .edit-btn').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const projectId = e.target.getAttribute('data-id');
+                const project = projects.find(p => p.id == projectId);
+                if (project) {
+                    openProjectModal(project);
+                } else {
+                    console.error('Selected project not found:', projectId);
+                }
+            });
+        });
+
+        document.querySelectorAll('#projectsTable .delete-btn').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const projectId = e.target.getAttribute('data-id');
+                const confirmDelete = confirm('Are you sure you want to delete this project? This action cannot be undone.');
+                if (confirmDelete) {
+                    try {
+                        console.log('Deleting project:', projectId);
+                        const response = await fetch(`/admin/projects/${projectId}`, {
+                            method: 'DELETE',
+                            credentials: 'include'
+                        });
+                        const data = await response.json();
+                        if (response.ok) {
+                            alert(data.message);
+                            loadProjects(); // Veriyi yeniden yükle
+                        } else {
+                            alert(data.error || 'Failed to delete the project.');
+                        }
+                    } catch (error) {
+                        console.error('Delete Error:', error);
+                        alert('An error occurred while deleting the project.');
+                    }
+                }
+            });
+        });
+    } catch (error) {
+        console.error('Error loading projects:', error);
+        alert('An error occurred while loading projects.');
+    }
+}
+
+/**
+ * Project Modal'ini Açma Fonksiyonu
+ */
+function openProjectModal(project = null) {
+  if (project) {
+    const toYMD = (s) => s ? s.slice(0, 10) : ''; // sadece "YYYY-MM-DD" kısmını alır
+
+    document.getElementById('projectId').value = project.id;
+    document.getElementById('projectName').value = project.name;
+
+    document.getElementById('projectStartDate').value = toLocalYMD(project.start_date);
+ document.getElementById('projectEndDate').value   = toLocalYMD(project.end_date);
+ document.getElementById('projectEvaluationDeadline').value = toLocalYMD(project.evaluation_deadline);
+
+
+    projectModalTitle.textContent = 'Edit Project';
+    projectSubmitBtn.textContent = 'Update';
+  } else {
+    projectForm.reset();
+    document.getElementById('projectId').value = '';
+    projectModalTitle.textContent = 'Add Project';
+    projectSubmitBtn.textContent = 'Save';
+  }
+  projectModal.style.display = 'block';
+}
+/**
+ * Project Form Gönderimlerini İşleme
+ */
+projectForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('projectId').value;
+    const name = document.getElementById('projectName').value.trim();
+    // const type = document.getElementById('projectType').value.trim(); // Type alanı kaldırıldı
+    const start_date = document.getElementById('projectStartDate').value;
+    const end_date = document.getElementById('projectEndDate').value;
+    const evaluation_deadline = document.getElementById('projectEvaluationDeadline').value; // Yeni Alan
+
+    if (!name || !start_date) { // 'type' kaldırıldığı için kontrol güncellendi
+        alert('Project name and start date are required.');
+        return;
+    }
+
+    // Yeni Doğrulama: evaluation_deadline'in end_date'den sonra olduğundan emin olun
+    if (end_date && evaluation_deadline) {
+        const endDate = new Date(end_date);
+        const evalDeadline = new Date(evaluation_deadline);
+        if (evalDeadline <= endDate) {
+            alert('Evaluation Deadline must be after End Date.');
+            return;
+        }
+    }
+
+    const projectData = { name, start_date, end_date, evaluation_deadline };
+
+    try {
+        let response, data;
+        if (id) {
+            // Güncelleme işlemi
+            console.log('Updating project:', id);
+            response = await fetch(`/admin/projects/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(projectData),
+                credentials: 'include'
+            });
+            data = await response.json();
+            if (response.ok) {
+                alert(data.message);
+                projectModal.style.display = 'none';
+                loadProjects();
+            } else {
+                alert(data.error || 'Failed to update the project.');
+            }
+        } else {
+            // Ekleme işlemi
+            console.log('Adding project:', projectData);
+            response = await fetch('/admin/projects', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(projectData),
+                credentials: 'include'
+            });
+            data = await response.json();
+            if (response.ok) {
+                alert(data.message);
+                projectModal.style.display = 'none';
+                loadProjects();
+            } else {
+                alert(data.error || 'Failed to add the project.');
+            }
+        }
+    } catch (error) {
+        console.error('Error during project operation:', error);
+        alert('An error occurred during the project operation.');
+    }
+});
+
+// ... mevcut JavaScript kodları devam ediyor ...
+
+
+        // Project Modal'ini Kapatma
+        closeProjectModal.onclick = () => {
+            projectModal.style.display = 'none';
+        };
+
+        // =====================
+        // Öğrenci Yönetim Fonksiyonları
+        // =====================
+
+        /**
+         * Öğrencileri Yükleme
+         */
+        async function loadStudents(endpoint = '/admin/students') {
+            try {
+                const studentsData = await fetchData(endpoint);
+                const students = Array.isArray(studentsData) ? studentsData : (studentsData.students || []);
+                const tbody = document.querySelector('#studentsTable tbody');
+                tbody.innerHTML = '';
+                students.forEach(student => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${student.id}</td>
+                        <td>${student.student_number}</td>
+                        <td>${student.first_name}</td>
+                        <td>${student.last_name}</td>
+                        <td>
+                            <button class="edit-btn" data-id="${student.id}">Edit</button>
+                        </td>
+                        <td>
+                            <button class="delete-btn" data-id="${student.id}">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                // Edit ve Delete Butonları için Event Listener'lar Ekleme
+                document.querySelectorAll('#studentsTable .edit-btn').forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const studentId = e.target.getAttribute('data-id');
+                        const student = students.find(s => s.id == studentId);
+                        if (student) {
+                            openStudentModal(student);
+                        }
+                    });
+                });
+
+                document.querySelectorAll('#studentsTable .delete-btn').forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const studentId = e.target.getAttribute('data-id');
+                        const confirmDelete = confirm('Are you sure you want to delete this student? This action cannot be undone.');
+                        if (confirmDelete) {
+                            try {
+                                const response = await fetch(`/admin/students/${studentId}`, {
+                                    method: 'DELETE',
+                                    credentials: 'include'
+                                });
+                                const data = await response.json();
+                                if (response.ok) {
+                                    alert(data.message);
+                                    loadStudents(); // Veriyi yeniden yükle
+                                } else {
+                                    alert(data.error || 'Failed to delete the student.');
+                                }
+                            } catch (error) {
+                                console.error('Delete Error:', error);
+                                alert('An error occurred while deleting the student.');
+                            }
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error('Error loading students:', error);
+                alert('An error occurred while loading students.');
+            }
+        }
+
+        /**
+         * Student Modal'ini Açma Fonksiyonu
+         */
+        function openStudentModal(student = null) {
+            if (student) {
+                // Güncelleme işlemi
+                document.getElementById('studentId').value = student.id;
+                document.getElementById('studentNumber').value = student.student_number;
+                document.getElementById('firstName').value = student.first_name;
+                document.getElementById('lastName').value = student.last_name;
+                studentModalTitle.textContent = 'Edit Student';
+                studentSubmitBtn.textContent = 'Update';
+            } else {
+                // Ekleme işlemi
+                studentForm.reset();
+                document.getElementById('studentId').value = '';
+                studentModalTitle.textContent = 'Add Student';
+                studentSubmitBtn.textContent = 'Save';
+            }
+            studentModal.style.display = 'block';
+        }
+
+        /**
+         * Student Form Gönderimlerini İşleme
+         */
+        studentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('studentId').value;
+            const student_number = document.getElementById('studentNumber').value.trim();
+            const first_name = document.getElementById('firstName').value.trim();
+            const last_name = document.getElementById('lastName').value.trim();
+
+            if (!student_number || !first_name || !last_name) {
+                alert('Student number, first name, and last name are required.');
+                return;
+            }
+
+            const studentData = { student_number, first_name, last_name };
+
+            try {
+                let response, data;
+                if (id) {
+                    // Güncelleme işlemi
+                    response = await fetch(`/admin/students/${id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(studentData),
+                        credentials: 'include'
+                    });
+                    data = await response.json();
+                    if (response.ok) {
+                        alert(data.message);
+                        studentModal.style.display = 'none';
+                        loadStudents();
+                    } else {
+                        alert(data.error || 'Failed to update the student.');
+                    }
+                } else {
+                    // Ekleme işlemi (eğer backend'de destekleniyorsa)
+                    response = await fetch('/admin/students', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(studentData),
+                        credentials: 'include'
+                    });
+                    data = await response.json();
+                    if (response.ok) {
+                        alert(data.message);
+                        studentModal.style.display = 'none';
+                        loadStudents();
+                    } else {
+                        alert(data.error || 'Failed to add the student.');
+                    }
+                }
+            } catch (error) {
+                console.error('Error during student operation:', error);
+                alert('An error occurred during the student operation.');
+            }
+        });
+
+        // Student Modal'ini Kapatma
+        closeStudentModal.onclick = () => {
+            studentModal.style.display = 'none';
+        };
+
+        // =====================
+        // Website Management Functions
+        // =====================
+
+        /**
+         * Load Websites with Optional Project Filter
+         */
+        async function loadWebsites(project_id = null) {
+            try {
+                let endpoint = '/admin/websites';
+                if (project_id) {
+                    endpoint += `?project_id=${project_id}`;
+                }
+                const websitesData = await fetchData(endpoint);
+                const websites = Array.isArray(websitesData) ? websitesData : (websitesData.websites || []);
+                const tbody = document.querySelector('#websitesTable tbody');
+                tbody.innerHTML = '';
+                websites.forEach(website => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${website.id}</td>
+                        <td><a href="${website.url}" target="_blank">${website.url}</a></td>
+                        <td>${website.project.name}</td>
+                        <td>${website.student.first_name} ${website.student.last_name} (SN: ${website.student.student_number})</td>
+                        <td>${website.evaluation_count || 0}</td>
+                        <td>${website.total_score || 0}</td>
+                        <td>
+                            <button class="edit-btn" data-id="${website.id}">Edit</button> <!-- Edit Button -->
+                        </td>
+                        <td>
+                            <button class="delete-btn" data-id="${website.id}">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                // Add Event Listeners to Edit Buttons
+                document.querySelectorAll('#websitesTable .edit-btn').forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const websiteId = e.target.getAttribute('data-id');
+                        const website = websites.find(w => w.id == websiteId);
+                        if (website) {
+                            openWebsiteModal(website);
+                        }
+                    });
+                });
+
+                // Add Event Listeners to Delete Buttons
+                document.querySelectorAll('#websitesTable .delete-btn').forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const websiteId = e.target.getAttribute('data-id');
+                        const confirmDelete = confirm('Are you sure you want to delete this website? This action cannot be undone.');
+                        if (confirmDelete) {
+                            try {
+                                const response = await fetch(`/admin/websites/${websiteId}`, {
+                                    method: 'DELETE',
+                                    credentials: 'include'
+                                });
+                                const data = await response.json();
+                                if (response.ok) {
+                                    alert(data.message);
+                                    loadWebsites(); // Reload data
+                                } else {
+                                    alert(data.error || 'Failed to delete the website.');
+                                }
+                            } catch (error) {
+                                console.error('Delete Error:', error);
+                                alert('An error occurred while deleting the website.');
+                            }
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error('Error loading websites:', error);
+                alert('An error occurred while loading websites.');
+            }
+        }
+
+        // =====================
+        // Website Modal Management
+        // =====================
+
+        // Modal Elemanlarını Seçme
+        const websiteModal = document.getElementById('websiteModal');
+        const closeWebsiteModal = document.getElementById('closeWebsiteModal');
+        const websiteForm = document.getElementById('websiteForm');
+        const websiteModalTitle = document.getElementById('websiteModalTitle');
+        const websiteSubmitBtn = document.getElementById('websiteSubmitBtn');
+
+        /**
+         * Open Website Modal Function
+         */
+        function openWebsiteModal(website) {
+            if (website) {
+                // Edit operation
+                document.getElementById('websiteId').value = website.id;
+                document.getElementById('websiteURL').value = website.url;
+                loadWebsiteProjects(website.project.id);
+                loadWebsiteStudents(website.student.id);
+                websiteModalTitle.textContent = 'Edit Website';
+                websiteSubmitBtn.textContent = 'Update';
+            }
+            websiteModal.style.display = 'block';
+        }
+
+        /**
+         * Load Projects into Website Modal
+         */
+        async function loadWebsiteProjects(selectedProjectId = null) {
+            try {
+                const projectsData = await fetchData('/admin/projects');
+                const projects = Array.isArray(projectsData.projects) ? projectsData.projects : [];
+                const projectSelect = document.getElementById('websiteProject');
+                projectSelect.innerHTML = '<option value="">Select Project</option>';
+                projects.forEach(project => {
+                    const option = document.createElement('option');
+                    option.value = project.id;
+                    option.textContent = project.name;
+                    if (selectedProjectId && project.id === selectedProjectId) {
+                        option.selected = true;
+                    }
+                    projectSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading projects for website:', error);
+                alert('An error occurred while loading projects.');
+            }
+        }
+
+        /**
+         * Load Students into Website Modal
+         */
+        async function loadWebsiteStudents(selectedStudentId = null) {
+            try {
+                const studentsData = await fetchData('/admin/students');
+                const students = Array.isArray(studentsData) ? studentsData : (studentsData.students || []);
+                const studentSelect = document.getElementById('websiteStudent');
+                studentSelect.innerHTML = '<option value="">Select Student</option>';
+                students.forEach(student => {
+                    const option = document.createElement('option');
+                    option.value = student.id;
+                    option.textContent = `${student.first_name} ${student.last_name} (SN: ${student.student_number})`;
+                    if (selectedStudentId && student.id === selectedStudentId) {
+                        option.selected = true;
+                    }
+                    studentSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading students for website:', error);
+                alert('An error occurred while loading students.');
+            }
+        }
+
+        websiteForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('websiteId').value;
+            const url = document.getElementById('websiteURL').value.trim();
+            const project_id = document.getElementById('websiteProject').value;
+            const student_id = document.getElementById('websiteStudent').value;
+
+            if (!url || !project_id || !student_id) {
+                alert('URL, Project ve Student zorunludur.');
+                return;
+            }
+
+            const websiteData = { 
+                url, 
+                project_id: parseInt(project_id, 10), // String'den sayıya dönüştürme
+                student_id: parseInt(student_id, 10)  // String'den sayıya dönüştürme
+            };
+
+            try {
+                let response, data;
+                if (id) {
+                    // Güncelleme işlemi
+                    response = await fetch(`/admin/websites/${id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(websiteData),
+                        credentials: 'include'
+                    });
+                } else {
+                    // Ekleme işlemi (eğer varsa)
+                    response = await fetch('/admin/websites', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(websiteData),
+                        credentials: 'include'
+                    });
+                }
+
+                data = await response.json();
+                if (response.ok) {
+                    alert(data.message);
+                    websiteModal.style.display = 'none';
+                    loadWebsites(); // Veriyi yeniden yükle
+                } else {
+                    alert(data.error || 'Web sitesi güncellenirken bir hata oluştu.');
+                }
+            } catch (error) {
+                console.error('Web sitesi güncellenirken hata:', error);
+                alert('Web sitesi güncellenirken bir hata oluştu.');
+            }
+        });
+
+        // Close Website Modal
+        closeWebsiteModal.onclick = () => {
+            websiteModal.style.display = 'none';
+        };
+
+        // =====================
+        // Evaluation Management Functions
+        // =====================
+
+        /**
+         * Load Evaluations with Optional Project Filter
+         */
+        async function loadEvaluations(project_id = null) {
+            try {
+                let endpoint = '/admin/evaluations';
+                if (project_id) {
+                    endpoint += `?project_id=${project_id}`;
+                }
+                const evaluationsData = await fetchData(endpoint);
+                const evaluations = Array.isArray(evaluationsData) ? evaluationsData : (evaluationsData.evaluations || []);
+                const tbody = document.querySelector('#evaluationsTable tbody');
+                tbody.innerHTML = '';
+                evaluations.forEach(evaluation => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${evaluation.id}</td>
+                        <td>${evaluation.evaluator.first_name} ${evaluation.evaluator.last_name} (SN: ${evaluation.evaluator.student_number})</td>
+                        <td><a href="${evaluation.website.url}" target="_blank">${evaluation.website.url}</a></td>
+                        <td>${evaluation.score !== null ? evaluation.score : 'No score'}</td>
+                        <td>${evaluation.comment || 'No comment'}</td>
+                        <td>
+                            <button class="edit-btn" data-id="${evaluation.id}">Edit</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                // Add Event Listeners to Edit Buttons
+                document.querySelectorAll('#evaluationsTable .edit-btn').forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const evaluationId = e.target.getAttribute('data-id');
+                        const evaluation = evaluations.find(ev => ev.id == evaluationId);
+                        if (evaluation) {
+                            openEvaluationModal(evaluation);
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error('Error loading evaluations:', error);
+                alert('An error occurred while loading evaluations.');
+            }
+        }
+
+        /**
+         * Load Projects into the Evaluation Filter Dropdown
+         */
+        async function loadEvaluationFilterProjects() {
+            try {
+                const projectsData = await fetchData('/admin/projects');
+                const projects = Array.isArray(projectsData.projects) ? projectsData.projects : [];
+                const filterProjectSelect = document.getElementById('filterProject');
+                
+                // Clear existing options except the first one
+                filterProjectSelect.innerHTML = '<option value="">All Projects</option>';
+                
+                projects.forEach(project => {
+                    const option = document.createElement('option');
+                    option.value = project.id;
+                    option.textContent = project.name;
+                    filterProjectSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading projects for evaluation filter:', error);
+                alert('An error occurred while loading projects for evaluation filter.');
+            }
+        }
+
+        /**
+         * Handle Project Filter Change
+         */
+        document.getElementById('filterProject').addEventListener('change', async (e) => {
+            const selectedProjectId = e.target.value;
+            await loadEvaluations(selectedProjectId);
+        });
+
+        /**
+         * Handle Clear Filter Button Click
+         */
+        document.getElementById('clearEvaluationFilterBtn').addEventListener('click', async () => {
+            document.getElementById('filterProject').value = '';
+            await loadEvaluations(); // Load all evaluations without filter
+        });
+
+        /**
+         * Load Evaluators and Websites for Evaluation Forms
+         * Used in Add/Edit Evaluation forms.
+         */
+        async function loadEvaluationOptions() {
+            try {
+                // Evaluators (Students)
+                const studentsData = await fetchData('/admin/students');
+                const students = Array.isArray(studentsData) ? studentsData : (studentsData.students || []);
+                const evaluatorSelect = document.getElementById('evaluator');
+                evaluatorSelect.innerHTML = '<option value="">Select</option>';
+                students.forEach(student => {
+                    evaluatorSelect.innerHTML += `<option value="${student.id}">${student.first_name} ${student.last_name} (SN: ${student.student_number})</option>`;
+                });
+
+                // Websites
+                const websitesData = await fetchData('/admin/websites');
+                const websites = Array.isArray(websitesData) ? websitesData : (websitesData.websites || []);
+                const websiteSelect = document.getElementById('website');
+                websiteSelect.innerHTML = '<option value="">Select</option>';
+                websites.forEach(website => {
+                    websiteSelect.innerHTML += `<option value="${website.id}">${website.url}</option>`;
+                });
+            } catch (error) {
+                console.error('Error loading evaluation options:', error);
+                alert('An error occurred while loading evaluation options.');
+            }
+        }
+
+        /**
+         * Open Evaluation Modal Function
+         */
+        function openEvaluationModal(evaluation) {
+            document.getElementById('evaluationId').value = evaluation.id;
+            document.getElementById('score').value = evaluation.score !== null ? evaluation.score : '';
+            document.getElementById('comment').value = evaluation.comment || '';
+
+            // Load Evaluator and Website options and set selected values
+            loadEvaluationOptions().then(() => {
+                document.getElementById('evaluator').value = evaluation.evaluator.id; // Corrected Property
+                document.getElementById('website').value = evaluation.website.id; // Corrected Property
+            });
+
+            evaluationModalTitle.textContent = 'Edit Evaluation';
+            evaluationSubmitBtn.textContent = 'Update';
+            evaluationModal.style.display = 'block';
+        }
+
+        /**
+         * Handle Evaluation Form Submission
+         */
+        evaluationForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('evaluationId').value;
+            const evaluator_id = document.getElementById('evaluator').value;
+            const website_id = document.getElementById('website').value;
+            const score = parseInt(document.getElementById('score').value);
+            const comment = document.getElementById('comment').value.trim();
+
+            if (!evaluator_id || !website_id || isNaN(score) || score < 1 || score > 5) {
+                alert('Evaluator, Website, and a valid score (1-5) are required.');
+                return;
+            }
+
+            const evaluationData = { score, comment };
+
+            try {
+                let response, data;
+                if (id) {
+                    // Update operation
+                    response = await fetch(`/admin/evaluations/${id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(evaluationData),
+                        credentials: 'include'
+                    });
+                    data = await response.json();
+                    if (response.ok) {
+                        alert(data.message);
+                        evaluationModal.style.display = 'none';
+                        loadEvaluations(); // Load evaluations with current filter
+                        loadWebsites(); // Reload websites to update scores if necessary
+                    } else {
+                        alert(data.error || 'Failed to update the evaluation.');
+                    }
+                } else {
+                    // Evaluation addition route does not exist. If needed, you can add a POST route in the backend.
+                    alert('Adding evaluations is not supported yet.');
+                }
+            } catch (error) {
+                console.error('Error during evaluation operation:', error);
+                alert('An error occurred during the evaluation operation.');
+            }
+        });
+
+        // Close Evaluation Modal
+        closeEvaluationModal.onclick = () => {
+            evaluationModal.style.display = 'none';
+        };
+
+        // =====================
+        // Populate Evaluations Fonksiyonları
+        // =====================
+
+        /**
+         * Populate Evaluations Modal'ini Açma Fonksiyonu
+         */
+        function openPopulateEvaluationsModal() {
+            populateEvaluationsForm.reset();
+            loadPopulateProjects(); // Projeleri yükle
+            populateEvaluationsModal.style.display = 'block';
+        }
+
+        /**
+         * Populate Evaluations Modal'ini Kapatma Fonksiyonu
+         */
+        closePopulateEvaluationsModal.onclick = () => {
+            populateEvaluationsModal.style.display = 'none';
+        };
+
+        /**
+         * Populate Evaluations için Projeleri Yükleme
+         */
+        async function loadPopulateProjects() {
+            try {
+                const projectsData = await fetchData('/admin/projects');
+                const projects = Array.isArray(projectsData.projects) ? projectsData.projects : [];
+                populateProjectSelect.innerHTML = '<option value="">Select</option>';
+                projects.forEach(project => {
+                    const option = document.createElement('option');
+                    option.value = project.id;
+                    option.textContent = project.name;
+                    populateProjectSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading populate projects:', error);
+                alert('An error occurred while loading populate projects.');
+            }
+        }
+
+        /**
+         * Populate Evaluations Form Gönderimlerini İşleme
+         */
+        populateEvaluationsForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const project_id = populateProjectSelect.value;
+
+            if (!project_id) {
+                alert('Please select a project.');
+                return;
+            }
+
+            const requestBody = { project_id };
+
+            try {
+                const response = await fetch('/admin/populate-evaluations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody),
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(data.message);
+                    populateEvaluationsModal.style.display = 'none';
+                    loadEvaluations(); // Evaluations tablosunu yeniden yükle
+                    loadWebsites(); // Websiteler tablosunu yeniden yükle (puan güncellemeleri için)
+                } else {
+                    alert(data.error || 'An error occurred while populating evaluations.');
+                }
+            } catch (error) {
+                console.error('Error populating evaluations:', error);
+                alert('An error occurred while populating evaluations.');
+            }
+        });
+
+        // =====================
+        // Yeni Eklenen: Websites Filter Fonksiyonları
+        // =====================
+
+        /**
+         * Load Projects into Websites Filter Dropdown
+         */
+        async function loadWebsitesFilterProjects() {
+            try {
+                const projectsData = await fetchData('/admin/projects');
+                const projects = Array.isArray(projectsData.projects) ? projectsData.projects : [];
+                const filterProjectSelect = document.getElementById('filterWebsitesProject');
+                
+                // Clear existing options except the first one
+                filterProjectSelect.innerHTML = '<option value="">All Projects</option>';
+                
+                projects.forEach(project => {
+                    const option = document.createElement('option');
+                    option.value = project.id;
+                    option.textContent = project.name;
+                    filterProjectSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading projects for websites filter:', error);
+                alert('An error occurred while loading projects for websites filter.');
+            }
+        }
+
+        /**
+         * Handle Websites Project Filter Change
+         */
+        document.getElementById('filterWebsitesProject').addEventListener('change', async (e) => {
+            const selectedProjectId = e.target.value;
+            await loadWebsites(selectedProjectId);
+        });
+
+        /**
+         * Handle Clear Websites Filter Button Click
+         */
+        document.getElementById('clearWebsitesFilterBtn').addEventListener('click', async () => {
+            document.getElementById('filterWebsitesProject').value = '';
+            await loadWebsites(); // Load all websites without filter
+        });
+
+        // =====================
+        // Pencerede Tıklama Olayları ile Modalleri Kapatma
+        // =====================
+        window.onclick = (event) => {
+            if (event.target == projectModal) {
+                projectModal.style.display = 'none';
+            }
+            if (event.target == studentModal) {
+                studentModal.style.display = 'none';
+            }
+            if (event.target == evaluationModal) {
+                evaluationModal.style.display = 'none';
+            }
+            if (event.target == populateEvaluationsModal) {
+                populateEvaluationsModal.style.display = 'none';
+            }
+            if (event.target == websiteModal) { // Yeni Eklenen: Website Modal'ını kapatma
+                websiteModal.style.display = 'none';
+            }
+        };
+
+        // =====================
+        // Evaluations Filter Management
+        // =====================
+
+        /**
+         * Load All Data (Updated)
+         */
+        async function loadAllData() {
+            await loadProjects();
+            await loadStudents();
+            await loadWebsites(); // Initially load all websites
+            await loadEvaluations();
+            await loadEvaluationFilterProjects(); // Load projects into evaluations filter
+            await loadWebsitesFilterProjects(); // Load projects into websites filter
+        }
+   
+        /**
+         * Sayfa Yüklendiğinde Kullanıcı Bilgilerini Al ve Verileri Yükle
+         */
+        document.addEventListener('DOMContentLoaded', async () => {
+            await getUserInfo();
+            await loadAllData();
+        });
+
+        /**
+         * Öğrencileri Arama Fonksiyonu
+         */
+        async function searchStudents() {
+            const firstName = document.getElementById('searchFirstName').value.trim();
+            const lastName = document.getElementById('searchLastName').value.trim();
+
+            if (!firstName && !lastName) {
+                alert('Please fill at least one field to search.');
+                return;
+            }
+
+            const queryParams = new URLSearchParams();
+            if (firstName) queryParams.append('first_name', firstName);
+            if (lastName) queryParams.append('last_name', lastName);
+
+            const endpoint = `/admin/students/search?${queryParams.toString()}`;
+            await loadStudents(endpoint);
+        }
+
+        /**
+         * Aramayı Temizleme Fonksiyonu
+         */
+        function clearSearch() {
+            document.getElementById('searchFirstName').value = '';
+            document.getElementById('searchLastName').value = '';
+            loadStudents(); // Tüm öğrencileri yeniden yükle
+        }
+
+        // Arama ve Temizleme Butonlarına Event Listener'lar Ekleme
+        document.getElementById('searchStudentBtn').addEventListener('click', async () => {
+            await searchStudents();
+        });
+        document.getElementById('exportExcelBtn').addEventListener('click', async () => {
+  try {
+    const url = '/admin/reports/student-project-pivot'; // ✅ Yeni endpoint pivot için
+
+    const res = await fetch(url, { method: 'GET', credentials: 'include' });
+    if (!res.ok) {
+      alert('Export failed');
+      return;
+    }
+
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'student-project-pivot.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  } catch (err) {
+    console.error('Export error:', err);
+    alert('An error occurred while exporting the report.');
+  }
+});
+
+
+        document.getElementById('clearSearchBtn').addEventListener('click', () => {
+            clearSearch();
+        });
+
+        // Add Student ve Add Project Butonlarına Event Listener'lar Ekleme
+        addStudentBtn.addEventListener('click', () => {
+            openStudentModal();
+        });
+
+        addProjectBtn.addEventListener('click', () => {
+            openProjectModal();
+        });
+
+        // Populate Evaluations Butonuna Event Listener Ekleme
+        populateEvaluationsBtn.addEventListener('click', () => {
+            openPopulateEvaluationsModal();
+        });
+        
+    </script>
+
+</body>
+</html>

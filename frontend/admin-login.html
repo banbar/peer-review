@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Review System - Admin Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f2f2f2;
+    }
+
+    .login-container {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 400px;
+      margin: auto;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px;
+      width: 100%;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .back-link {
+      display: block;
+      margin-top: 15px;
+      text-align: center;
+      font-size: 14px;
+      text-decoration: none;
+      color: #fff;
+      background-color: #4c93af;
+      padding: 8px 16px;
+      border-radius: 4px;
+    }
+
+    .back-link:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>Admin Login</h2>
+    <form id="adminLoginForm">
+      <input type="text" id="student_number" name="student_number" placeholder="Student Number" required />
+      <input type="password" id="password" name="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
+    <a href="index.html" class="back-link">Back to Home</a>
+  </div>
+
+  <!-- Admin login script -->
+  <script src="/js/admin-login.js"></script>
+</body>
+</html>

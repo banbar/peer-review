@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Şifremi Unuttum</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --brand:#4c93af; --brandHover:#3f7f96; --ok:#0a7d27; --err:#b30000; --muted:#666; }
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; margin: 24px; background:#fafafa; }
+    .card { max-width: 440px; margin: 0 auto; background:#fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 22px; }
+    h1 { font-size: 22px; margin: 0 0 8px; }
+    p.sub { color: var(--muted); margin: 0 0 18px; }
+    label { display:block; margin-top: 12px; font-weight: 600; }
+    input[type="email"] { width:100%; padding:11px; margin-top:6px; border:1px solid #ccc; border-radius:8px; background:#fff; }
+    button { margin-top:16px; padding:12px; width:100%; background:var(--brand); color:#fff; border:0; border-radius:8px; cursor:pointer; font-weight:600; }
+    button:hover { background:var(--brandHover); }
+    button[disabled] { opacity:.7; cursor:not-allowed; }
+    #msg { margin-top: 12px; }
+    .ok { color: var(--ok); font-weight: 600; }
+    .err { color: var(--err); font-weight: 600; }
+    .muted { color: var(--muted); font-size: 14px; }
+    .links { display:flex; justify-content: space-between; margin-top:12px; }
+    a { color: var(--brand); text-decoration:none; font-size:14px; }
+    a:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Şifremi Unuttum</h1>
+    <p class="sub">E-posta adresinizi yazın; size <strong>6 haneli şifre sıfırlama kodu</strong> gönderelim.</p>
+
+    <label for="email">E-posta (@hacettepe.edu.tr)</label>
+    <input type="email" id="email" autocomplete="email" placeholder="ad.soyad@hacettepe.edu.tr" required />
+    <button id="sendBtn" type="button">Kodu Gönder</button>
+
+    <p id="msg" class="muted"></p>
+
+    <div class="links">
+      <a href="login.html">Giriş sayfasına dön</a>
+      <span><small>Kod gelmediyse spam klasörünü kontrol edin.</small></span>
+    </div>
+  </div>
+
+  <script>
+    const emailEl = document.getElementById('email');
+    const sendBtn = document.getElementById('sendBtn');
+    const msgEl = document.getElementById('msg');
+
+    const setMsg = (t, c='muted') => { msgEl.textContent = t; msgEl.className = c; };
+    const isHacettepe = v => /^[a-z0-9._%+-]+@hacettepe\.edu\.tr$/.test(String(v||'').trim().toLowerCase());
+
+    async function sendCode() {
+      const email = (emailEl.value || '').trim().toLowerCase();
+      if (!email) return setMsg('E-posta zorunludur.', 'err');
+      if (!isHacettepe(email)) return setMsg('Yalnızca @hacettepe.edu.tr kabul edilir.', 'err');
+
+      sendBtn.disabled = true;
+      setMsg('Kod gönderiliyor…');
+      try {
+        const r = await fetch('/auth/forgot-password', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email })
+});
+        const j = await r.json();
+        if (r.ok) setMsg(j.message || 'Kod gönderildi. E-postanızı kontrol edin.', 'ok');
+        else setMsg(j.error || 'Kod gönderilemedi.', 'err');
+      } catch (e) {
+        console.error(e);
+        setMsg('Sunucuya ulaşılamadı.', 'err');
+      } finally {
+        sendBtn.disabled = false;
+      }
+    }
+
+    sendBtn.addEventListener('click', sendCode);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendCode(); });
+  </script>
+</body>
+</html>

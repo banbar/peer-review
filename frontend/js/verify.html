@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>E-posta Doğrulama</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --brand:#4c93af; --ok:#0a7d27; --err:#b30000; --muted:#666; }
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; margin: 24px; background:#fafafa; }
+    .card { max-width: 520px; margin: 0 auto; background:#fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 22px; }
+    h1 { font-size: 22px; margin: 0 0 8px; }
+    p.sub { color: var(--muted); margin: 0 0 18px; }
+    .muted { color: var(--muted); }
+    .ok { color: var(--ok); font-weight: 600; }
+    .err { color: var(--err); font-weight: 600; }
+    button,a.btn {
+      display:inline-block; margin-top:12px; padding:10px 14px;
+      background:var(--brand); color:#fff; border:0; border-radius:8px; cursor:pointer; text-decoration:none;
+    }
+    code { background:#f3f3f3; padding:2px 6px; border-radius:6px; }
+    .hidden { display:none; }
+    label { display:block; margin-top: 10px; font-weight:600; }
+    input { width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; margin-top:6px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>E-posta Doğrulama</h1>
+    <p class="sub">Hesabınızı doğruluyoruz…</p>
+    <p id="msg" class="muted"></p>
+
+    <!-- Opsiyonel: Otomatik doğrulama başarısız olursa manuel form -->
+    <div id="manual" class="hidden">
+      <p class="sub">Otomatik doğrulama başarısız olduysa, aşağıdan deneyin.</p>
+      <label for="email">E-posta</label>
+      <input id="email" type="email" placeholder="ad.soyad@hacettepe.edu.tr" />
+      <label for="code">Doğrulama Kodu</label>
+      <input id="code" type="text" placeholder="123456" />
+      <button id="verifyBtn">Doğrula</button>
+    </div>
+
+    <a href="login.html" id="goLogin" class="btn hidden">Girişe Dön</a>
+  </div>
+
+  <script>
+    const msg = document.getElementById('msg');
+    const manual = document.getElementById('manual');
+    const goLogin = document.getElementById('goLogin');
+
+    function setMsg(t, cls='muted'){ msg.textContent=t; msg.className=cls; }
+
+    async function verify(email, code) {
+      try {
+        const r = await fetch('/auth/verify-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, code })
+        });
+        const j = await r.json();
+        if (r.ok) {
+          setMsg(j.message || 'E-posta doğrulandı. Artık giriş yapabilirsiniz.', 'ok');
+          goLogin.classList.remove('hidden');
+        } else {
+          setMsg(j.error || 'Doğrulama başarısız.', 'err');
+          manual.classList.remove('hidden');
+          // form alanlarını doldur
+          document.getElementById('email').value = email || '';
+          document.getElementById('code').value = code || '';
+        }
+      } catch (e) {
+        console.error(e);
+        setMsg('Sunucuya ulaşılamadı.', 'err');
+        manual.classList.remove('hidden');
+      }
+    }
+
+    // sayfa açılır açılmaz URL parametrelerini dene
+    const params = new URLSearchParams(location.search);
+    const email = params.get('email');
+    const code  = params.get('code');
+
+    if (email && code) {
+      setMsg('Doğrulama yapılıyor…');
+      verify(email, code);
+    } else {
+      setMsg('Geçersiz doğrulama bağlantısı. Lütfen e-postadaki linke tekrar tıklayın veya kodu elle girin.', 'err');
+      manual.classList.remove('hidden');
+    }
+
+    // Manuel buton
+    document.getElementById('verifyBtn')?.addEventListener('click', () => {
+      const e = document.getElementById('email').value.trim().toLowerCase();
+      const c = document.getElementById('code').value.trim();
+      if (!e || !c) return setMsg('E-posta ve kod zorunludur.', 'err');
+      setMsg('Doğrulama yapılıyor…');
+      verify(e, c);
+    });
+  </script>
+</body>
+</html>

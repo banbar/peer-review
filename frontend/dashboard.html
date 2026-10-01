@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Basic Styles */
+        
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: #333;
+        }
+
+        header .greeting {
+            font-size: 1.2em;
+            color: #555;
+        }
+
+        /* Section Styles */
+        section {
+            background: #fff;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        section h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        /* Button Styles */
+        button {
+            padding: 10px 15px;
+            margin: 5px 0;
+            cursor: pointer;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        /* Specific Button Styles */
+        .submit-btn {
+            background-color: #2ecc71;
+        }
+
+        .submit-btn:hover {
+            background-color: #27ae60;
+        }
+
+        .update-btn {
+            background-color: #f1c40f;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .update-btn:hover {
+            background-color: #e1b12c;
+        }
+
+        .delete-btn {
+            background-color: #e74c3c;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+
+        /* List Styles */
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background: #fff;
+            margin-bottom: 10px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        /* Form Styles */
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        select,
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        /* Message Styles */
+        .message {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .message.success {
+            color: green;
+        }
+
+        .message.error {
+            color: red;
+        }
+
+        .message.warning {
+            color: #e67e22; /* Orange color for warnings */
+            background-color: #f9e6d5; /* Light orange background */
+            border: 1px solid #e67e22;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.5); 
+        }
+
+        /* Update Evaluation Modal Styles */
+        #updateModal .modal-content {
+            background-color: #fff;
+            margin: 100px auto; 
+            padding: 20px;
+            border: 1px solid #888;
+            width: 400px; 
+            border-radius: 4px;
+            position: relative;
+        }
+
+        /* Update Website Modal Styles */
+        #updateWebsiteModal .modal-content {
+            background-color: #fff;
+            margin: 100px auto; 
+            padding: 20px;
+            border: 1px solid #888;
+            width: 400px; 
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            right: 10px;
+            top: 5px;
+            cursor: pointer;
+        }
+
+        .close-modal:hover,
+        .close-modal:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .modal-content {
+                width: 90%;
+                margin: 50px auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Evaluation Panel</h1>
+        <div class="greeting">Hello, <span id="studentName">Student</span>!</div>
+        <button id="logoutBtn">Logout</button>
+    </header>
+
+    <!-- Project Selection and Save Website Form -->
+    <section>
+        <h2>Select Project and Save Website</h2>
+        <form id="submitWebsiteForm">
+            <label for="projectSelect">Select Project:</label>
+            <select id="projectSelect" name="project_id" required>
+                <option value="">Select a project</option>
+                <!-- Active projects will be dynamically added here -->
+            </select>
+        
+            <label for="websiteUrl">Website URL:</label>
+            <input type="text" id="websiteUrl" name="url" placeholder="https://example.com" required>
+        
+            <button type="submit" class="submit-btn">Save Website</button>
+            <p id="submitWebsiteMessage" class="message"></p>
+            <!-- Current Website URL -->
+            <p id="currentWebsiteUrl" class="message"></p>
+        </form>
+    </section>
+    
+    <!-- Project Selection for Evaluations -->
+    <section id="evaluationProjectSection">
+        <h2>Select Project for Evaluations</h2>
+        <label for="evaluationProjectSelect">Select Project:</label>
+        <select id="evaluationProjectSelect" name="evaluation_project_id" required>
+            <option value="">Select a project</option>
+            <!-- Active projects will be dynamically added here -->
+        </select>
+        <p id="projectDates" class="message"></p>
+    </section>
+
+    <!-- Get Assigned Websites -->
+    <section>
+        <h2>Get Assigned Websites</h2>
+        <ul id="assignedWebsitesList"></ul>
+    </section>
+
+    <!-- Evaluate Websites -->
+    <section>
+        <h2>Evaluate Websites</h2>
+        <form id="evaluateForm">
+            <div id="evaluationFields">
+                <!-- Evaluation fields will be dynamically added here -->
+            </div>
+            <button type="submit" class="submit-btn">Evaluate</button>
+            <p id="evaluateMessage" class="message"></p>
+        </form>
+    </section>
+
+    <!-- View Own Evaluations -->
+    <section>
+        <h2>View Your Evaluations</h2>
+        <ul id="myEvaluationsList"></ul>        
+    </section>
+
+    <!-- Get Evaluations on My Websites -->
+    <section>
+        <h2>Evaluations on My Websites</h2>
+        
+        <ul id="evaluationsOnMyWebsitesList"></ul>        
+    </section>
+
+    <!-- Update Evaluation Modal -->
+    <div id="updateModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeUpdateModal">&times;</span>
+            <h3>Update Evaluation</h3>
+            <form id="updateForm">
+                <label for="newScore">New Score (1-5):</label>
+                <input type="number" id="newScore" name="newScore" min="1" max="5" required>
+
+                <label for="newComment">New Comment:</label>
+                <textarea id="newComment" name="newComment" placeholder="Your new comment"></textarea>
+
+                <button type="submit" class="submit-btn">Update</button>
+                <button type="button" id="closeModalBtn" class="delete-btn">Cancel</button>
+                <p id="updateMessage" class="message"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Update Website Modal -->
+    <div id="updateWebsiteModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeUpdateWebsiteModal">&times;</span>
+            <h3>Update Website</h3>
+            <form id="updateWebsiteForm">
+                <label for="updateWebsiteUrl">New Website URL:</label>
+                <input type="text" id="updateWebsiteUrl" name="updateWebsiteUrl" placeholder="https://example.com" required>
+
+                <button type="submit" class="submit-btn">Update</button>
+                <button type="button" id="closeUpdateWebsiteBtn" class="delete-btn">Cancel</button>
+                <p id="updateWebsiteMessage" class="message"></p>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
